@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding=utf-8 -*-
 
-from config import VIDEO_ID, USER_ID, NUM_WINNERS, COOKIE
+from config import VIDEO_ID, USER_ID, NUM_WINNERS
 from helper import get_commenters, get_followers, draw
 
-cookies = dict(cookies_are=COOKIE)
-
 if __name__ == '__main__':
+    with open("cookies.txt", "r") as f:
+        raw = f.read().strip()
+        cookies = dict(cookies_are=raw)
     commenters = get_commenters(VIDEO_ID)
     del commenters[USER_ID]
     followers = get_followers(USER_ID, cookies)
