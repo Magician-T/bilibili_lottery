@@ -3,52 +3,44 @@
 
 import requests
 from random import sample
+from datetime import datetime, timedelta, timezone
 
 
-def get_commenters(video_id):
+def get_commenters(video_id, cookies):
     print("获取评论用户...")
-    url_template = "https://api.bilibili.com/x/v2/reply?type=1&oid={}&pn={}&nohot=1&sort=0"
-    commenters = {}
+    url_template = "https://member.bilibili.com/x/web/replies?order=ctime&filter=-1&is_hidden=0&type=1&oid={}&pn={}&ps=10"
+    followed = {}
+    not_followed = {}
     pn = 1
+    comment_cnt = 0
     while True:
         url = url_template.format(video_id, pn)
-        r = requests.get(url)
-        j = r.json()
-        replies = j["data"]["replies"]
-        if not replies:
-            break
-        for reply in replies:
-            mid = reply["mid"]
-            user_name = reply["member"]["uname"]
-            commenters[mid] = user_name
-        pn += 1
-    print("获取评论用户...完成!")
-    return commenters
-
-
-def get_followers(user_id, cookies):
-    print("获取粉丝列表...")
-    url_template = "https://api.bilibili.com/x/relation/followers?vmid={}&pn={}&ps=20&order=desc"
-    followers = {}
-    pn = 1
-    while True:
-        url = url_template.format(user_id, pn)
         r = requests.get(url, cookies=cookies)
         j = r.json()
-        if j["code"] > 0:
-            print("警告: 由于cookie设置不正确, {}".format(j["message"]))
+        comments = j["data"]
+        if not comments:
             break
-        followers_list = j["data"]["list"]
-        if not followers_list:
-            break
-        for follower in followers_list:
-            mid = follower["mid"]
-            user_name = follower["uname"]
-            followers[mid] = user_name
+        for comment in comments:
+            mid = comment["mid"]
+            user_name = comment["replier"]
+            if comment["relation"] == 2:
+                followed[mid] = user_name
+            else:
+                not_followed[mid] = user_name
+            comment_cnt += 1
+            if comment_cnt % 200 == 0:
+                print("已读取{}条评论...".format(comment_cnt))
         pn += 1
-    print("获取粉丝列表...完成!")
-    return followers
+    print("共读取{}条评论，包含{}名用户，{}人已关注".format(comment_cnt,
+                                           len(followed) + len(not_followed), len(followed)))
+    return followed, not_followed
 
 
 def draw(pool, num_winners):
     return sample(pool, num_winners)
+
+
+def get_beijing_time():
+    utc_dt = datetime.utcnow().replace(tzinfo=timezone.utc)
+    bj_dt = utc_dt.astimezone(timezone(timedelta(hours=8)))
+    return bj_dt.strftime("%Y-%m-%d, %H:%M:%S")
