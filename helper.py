@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 
 def get_commenters(video_id, cookies):
     print("获取评论用户...")
-    url_template = "https://member.bilibili.com/x/web/replies?order=ctime&filter=-1&is_hidden=0&type=1&oid={}&pn={}&ps=10"
+    url_template = "https://member.bilibili.com/x/web/replies?order=ctime&filter=-1&is_hidden=0&type=1&bvid={}&pn={}&ps=10"
     followed = {}
     not_followed = {}
     pn = 1
