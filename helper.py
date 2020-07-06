@@ -36,6 +36,38 @@ def get_commenters(video_id, cookies):
     return followed, not_followed
 
 
+def get_cid(video_id):
+    url_template = "https://api.bilibili.com/x/player/pagelist?bvid={}&jsonp=jsonp"
+    url = url_template.format(video_id)
+    r = requests.get(url)
+    j = r.json()
+    return j["data"][0]["cid"]
+
+
+def get_dm(video_id, cookies):
+    print("获取弹幕...")
+    oid = get_cid(video_id)
+    url_template = "https://api.bilibili.com/x/v2/dm/search?oid={}&type=1&keyword=&order=ctime&sort=desc&pn={}&ps=50"
+    dm_users = set()
+    pn = 1
+    dm_cnt = 0
+    while True:
+        url = url_template.format(oid, pn)
+        r = requests.get(url, cookies=cookies)
+        j = r.json()
+        dms = j["data"]["result"]
+        if not dms:
+            break
+        for dm in dms:
+            dm_cnt += 1
+            dm_users.add(dm["mid"])
+        if dm_cnt % 200 == 0:
+            print("已读取{}条弹幕...".format(dm_cnt))
+        pn += 1
+    print("共读取{}条弹幕，包含{}名用户".format(dm_cnt, len(dm_users)))
+    return dm_users
+
+
 def draw(pool, num_winners):
     return sample(pool, num_winners)
 

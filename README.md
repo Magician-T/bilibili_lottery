@@ -28,6 +28,7 @@ B站UP主抽奖脚本，从评论+关注的用户中抽取若干名幸运观众
 |参数名|说明|
 |:-:|:-:|
 |TEST_POOL_SIZE|测试奖池人数|
+|TEST_DM_RATIO|测试弹幕人数比例|
 |TEST_WINNERS|测试获奖人数|
 |TEST_EXPERIMENTS|测试实验次数|
 
